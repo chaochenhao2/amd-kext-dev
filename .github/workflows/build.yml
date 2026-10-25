@@ -43,14 +43,15 @@ jobs:
           K=AMDProbe
           OUT="build/$K.kext"
           mkdir -p "$OUT/Contents/MacOS"
-          # kext 必须链接成 MH_BUNDLE（不是 OBJECT，也不是 MH_DYLIB）
-          #   -bundle                     生成 MH_BUNDLE
-          #   -undefined dynamic_lookup    内核符号在加载时解析
-          #   -Wl,-kext                   打上 kext 标记
-          clang++ -arch x86_64 -mkernel \
-            -bundle -undefined dynamic_lookup \
+          # 实测结果（见 probe-report 分支）：
+          #   -Wl,-kext              -> "Mach-O 64-bit kext bundle"  ✅
+          #   -Wl,-kext -Wl,-r       -> "Mach-O 64-bit object"       ❌
+          #   -bundle -undefined dynamic_lookup -Wl,-kext -> 找不到 libc++ ❌
+          #   -Wl,-kext -Wl,-dylib   -> 大量未定义符号（内核才能提供）❌
+          # 结论：只用 -Wl,-kext，不加 -r，不链接任何系统库。
+          # IOService/OSMetaClass/IOLog 等符号保持未解析，由内核在加载时绑定。
+          clang++ -arch x86_64 -mkernel -nostdlib \
             -Wl,-kext \
-            -Wl,-no_implicit_dylibs \
             "build/$K.o" -o "$OUT/Contents/MacOS/$K"
           cp "kext/$K/Info.plist" "$OUT/Contents/Info.plist"
           echo "=== 链接结果 ==="
