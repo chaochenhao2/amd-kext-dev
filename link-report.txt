@@ -1,0 +1,656 @@
+==================================================
+[A] clang++ -arch x86_64 -mkernel -nostdlib -Wl,-kext
+  -> filetype= unknown
+build/v_A: Mach-O 64-bit kext bundle x86_64
+==================================================
+[B] clang++ -arch x86_64 -mkernel -bundle -undefined dynamic_lookup
+  -> filetype= unknown
+build/v_B: Mach-O 64-bit bundle x86_64
+==================================================
+[C] clang++ -arch x86_64 -mkernel -bundle -undefined dynamic_lookup -Wl,-kext
+ld: library not found for -lc++
+clang: error: linker command failed with exit code 1 (use -v to see invocation)
+  -> LINK FAILED (rc=1)
+==================================================
+[D] clang++ -arch x86_64 -mkernel -nostdlib -Wl,-kext -Wl,-undefined,dynamic_lookup
+  -> filetype= unknown
+build/v_D: Mach-O 64-bit kext bundle x86_64
+==================================================
+[E] clang++ -arch x86_64 -mkernel -nostdlib -Wl,-kext -Wl,-r
+  -> filetype= unknown
+build/v_E: Mach-O 64-bit object x86_64
+==================================================
+[F] clang++ -arch x86_64 -mkernel -nostdlib -Wl,-kext -Wl,-dylib
+Undefined symbols for architecture x86_64:
+  "_IOLog", referenced from:
+      AMDProbe::start(IOService*) in AMDProbe.o
+      AMDProbe::start(IOService*) in AMDProbe.o
+      AMDProbe::start(IOService*) in AMDProbe.o
+      AMDProbe::start(IOService*) in AMDProbe.o
+      AMDProbe::start(IOService*) in AMDProbe.o
+      AMDProbe::start(IOService*) in AMDProbe.o
+      AMDProbe::start(IOService*) in AMDProbe.o
+      AMDProbe::start(IOService*) in AMDProbe.o
+      AMDProbe::start(IOService*) in AMDProbe.o
+      AMDProbe::start(IOService*) in AMDProbe.o
+      AMDProbe::start(IOService*) in AMDProbe.o
+      ...
+  "IOPCIDevice::extendedConfigRead8(unsigned long long)", referenced from:
+      AMDProbe::start(IOService*) in AMDProbe.o
+  "IOPCIDevice::extendedConfigRead16(unsigned long long)", referenced from:
+      AMDProbe::start(IOService*) in AMDProbe.o
+      AMDProbe::start(IOService*) in AMDProbe.o
+      AMDProbe::start(IOService*) in AMDProbe.o
+      AMDProbe::start(IOService*) in AMDProbe.o
+      AMDProbe::start(IOService*) in AMDProbe.o
+  "IOPCIDevice::extendedConfigRead32(unsigned long long)", referenced from:
+      AMDProbe::start(IOService*) in AMDProbe.o
+  "IOPCIDevice::metaClass", referenced from:
+      AMDProbe::start(IOService*) in AMDProbe.o
+  "OSMetaClass::_RESERVEDOSMetaClass0()", referenced from:
+      vtable for AMDProbe::MetaClass in AMDProbe.o
+  "OSMetaClass::_RESERVEDOSMetaClass1()", referenced from:
+      vtable for AMDProbe::MetaClass in AMDProbe.o
+  "OSMetaClass::_RESERVEDOSMetaClass2()", referenced from:
+      vtable for AMDProbe::MetaClass in AMDProbe.o
+  "OSMetaClass::_RESERVEDOSMetaClass3()", referenced from:
+      vtable for AMDProbe::MetaClass in AMDProbe.o
+  "OSMetaClass::_RESERVEDOSMetaClass4()", referenced from:
+      vtable for AMDProbe::MetaClass in AMDProbe.o
+  "OSMetaClass::_RESERVEDOSMetaClass5()", referenced from:
+      vtable for AMDProbe::MetaClass in AMDProbe.o
+  "OSMetaClass::_RESERVEDOSMetaClass6()", referenced from:
+      vtable for AMDProbe::MetaClass in AMDProbe.o
+  "OSMetaClass::_RESERVEDOSMetaClass7()", referenced from:
+      vtable for AMDProbe::MetaClass in AMDProbe.o
+  "OSMetaClass::OSMetaClass(char const*, OSMetaClass const*, unsigned int)", referenced from:
+      AMDProbe::MetaClass::MetaClass() in AMDProbe.o
+      AMDProbe::MetaClass::MetaClass() in AMDProbe.o
+      __GLOBAL__sub_I_AMDProbe.cpp in AMDProbe.o
+  "OSMetaClass::~OSMetaClass()", referenced from:
+      AMDProbe::MetaClass::~MetaClass() in AMDProbe.o
+      AMDProbe::MetaClass::~MetaClass() in AMDProbe.o
+      __GLOBAL__D_a in AMDProbe.o
+  "IORegistryEntry::detachAbove(IORegistryPlane const*)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IORegistryEntry::setLocation(OSSymbol const*, IORegistryPlane const*)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IORegistryEntry::setLocation(char const*, IORegistryPlane const*)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IORegistryEntry::setProperty(OSString const*, OSObject*)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IORegistryEntry::setProperty(OSSymbol const*, OSObject*)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IORegistryEntry::setProperty(char const*, OSObject*)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IORegistryEntry::setProperty(char const*, void*, unsigned int)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IORegistryEntry::setProperty(char const*, char const*)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IORegistryEntry::setProperty(char const*, bool)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IORegistryEntry::setProperty(char const*, unsigned long long, unsigned int)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IORegistryEntry::attachToChild(IORegistryEntry*, IORegistryPlane const*)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IORegistryEntry::childFromPath(char const*, IORegistryPlane const*, char*, int*)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IORegistryEntry::setProperties(OSObject*)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IORegistryEntry::attachToParent(IORegistryEntry*, IORegistryPlane const*)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IORegistryEntry::removeProperty(OSString const*)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IORegistryEntry::removeProperty(OSSymbol const*)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IORegistryEntry::removeProperty(char const*)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IORegistryEntry::detachFromChild(IORegistryEntry*, IORegistryPlane const*)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IORegistryEntry::detachFromParent(IORegistryEntry*, IORegistryPlane const*)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IORegistryEntry::setPropertyTable(OSDictionary*)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IORegistryEntry::runPropertyAction(int (*)(OSObject*, void*, void*, void*, void*), OSObject*, void*, void*, void*, void*)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IORegistryEntry::_RESERVEDIORegistryEntry0()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IORegistryEntry::_RESERVEDIORegistryEntry1()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IORegistryEntry::_RESERVEDIORegistryEntry2()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IORegistryEntry::_RESERVEDIORegistryEntry3()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IORegistryEntry::_RESERVEDIORegistryEntry4()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IORegistryEntry::_RESERVEDIORegistryEntry5()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IORegistryEntry::_RESERVEDIORegistryEntry6()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IORegistryEntry::_RESERVEDIORegistryEntry7()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IORegistryEntry::_RESERVEDIORegistryEntry8()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IORegistryEntry::_RESERVEDIORegistryEntry9()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IORegistryEntry::_RESERVEDIORegistryEntry10()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IORegistryEntry::_RESERVEDIORegistryEntry11()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IORegistryEntry::_RESERVEDIORegistryEntry12()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IORegistryEntry::_RESERVEDIORegistryEntry13()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IORegistryEntry::_RESERVEDIORegistryEntry14()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IORegistryEntry::_RESERVEDIORegistryEntry15()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IORegistryEntry::_RESERVEDIORegistryEntry16()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IORegistryEntry::_RESERVEDIORegistryEntry17()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IORegistryEntry::_RESERVEDIORegistryEntry18()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IORegistryEntry::_RESERVEDIORegistryEntry19()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IORegistryEntry::_RESERVEDIORegistryEntry20()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IORegistryEntry::_RESERVEDIORegistryEntry21()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IORegistryEntry::_RESERVEDIORegistryEntry22()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IORegistryEntry::_RESERVEDIORegistryEntry23()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IORegistryEntry::_RESERVEDIORegistryEntry24()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IORegistryEntry::_RESERVEDIORegistryEntry25()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IORegistryEntry::_RESERVEDIORegistryEntry26()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IORegistryEntry::_RESERVEDIORegistryEntry27()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IORegistryEntry::_RESERVEDIORegistryEntry28()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IORegistryEntry::_RESERVEDIORegistryEntry29()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IORegistryEntry::_RESERVEDIORegistryEntry30()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IORegistryEntry::_RESERVEDIORegistryEntry31()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IORegistryEntry::setName(OSSymbol const*, IORegistryPlane const*)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IORegistryEntry::setName(char const*, IORegistryPlane const*)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IORegistryEntry::detachAll(IORegistryPlane const*)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "OSMetaClassBase::safeMetaCast(OSMetaClassBase const*, OSMetaClass const*)", referenced from:
+      AMDProbe::start(IOService*) in AMDProbe.o
+  "OSMetaClassBase::_RESERVEDOSMetaClassBase4()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+      vtable for AMDProbe::MetaClass in AMDProbe.o
+  "OSMetaClassBase::_RESERVEDOSMetaClassBase5()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+      vtable for AMDProbe::MetaClass in AMDProbe.o
+  "OSMetaClassBase::_RESERVEDOSMetaClassBase6()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+      vtable for AMDProbe::MetaClass in AMDProbe.o
+  "OSMetaClassBase::_RESERVEDOSMetaClassBase7()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+      vtable for AMDProbe::MetaClass in AMDProbe.o
+  "OSMetaClassBase::Dispatch(IORPC)", referenced from:
+      vtable for AMDProbe::MetaClass in AMDProbe.o
+  "OSObject::_RESERVEDOSObject0()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "OSObject::_RESERVEDOSObject1()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "OSObject::_RESERVEDOSObject2()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "OSObject::_RESERVEDOSObject3()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "OSObject::_RESERVEDOSObject4()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "OSObject::_RESERVEDOSObject5()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "OSObject::_RESERVEDOSObject6()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "OSObject::_RESERVEDOSObject7()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "OSObject::_RESERVEDOSObject8()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "OSObject::_RESERVEDOSObject9()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "OSObject::_RESERVEDOSObject10()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "OSObject::_RESERVEDOSObject11()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "OSObject::_RESERVEDOSObject12()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "OSObject::_RESERVEDOSObject13()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "OSObject::_RESERVEDOSObject14()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "OSObject::_RESERVEDOSObject15()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "OSObject::init()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "OSObject::operator delete(void*, unsigned long)", referenced from:
+      AMDProbe::~AMDProbe() in AMDProbe.o
+      AMDProbe::operator delete(void*, unsigned long) in AMDProbe.o
+  "OSObject::operator new(unsigned long)", referenced from:
+      AMDProbe::MetaClass::alloc() const in AMDProbe.o
+      AMDProbe::operator new(unsigned long) in AMDProbe.o
+  "IOService::adjustBusy(int)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::gMetaClass", referenced from:
+      AMDProbe::MetaClass::MetaClass() in AMDProbe.o
+      AMDProbe::MetaClass::MetaClass() in AMDProbe.o
+      __GLOBAL__sub_I_AMDProbe.cpp in AMDProbe.o
+      AMDProbe::superClass in AMDProbe.o
+  "IOService::handleOpen(IOService*, unsigned int, void*)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::joinPMtree(IOService*)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::handleClose(IOService*, unsigned int)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::didTerminate(IOService*, unsigned int, bool*)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::getBusyState()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::getResources()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::requestProbe(unsigned int)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::tellChangeUp(unsigned long)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::updateReport(IOReportChannelList*, unsigned int, void*, void*)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::addPowerChild(IOService*)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::askChangeDown(unsigned long)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::matchLocation(IOService*)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::messageClient(unsigned int, OSObject*, void*, unsigned long)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::newUserClient(task*, void*, unsigned int, OSDictionary*, IOUserClient**)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::newUserClient(task*, void*, unsigned int, IOUserClient**)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::setPowerState(unsigned long, IOService*)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::willTerminate(IOService*, unsigned int)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::activityTickle(unsigned long, unsigned long)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::applyToClients(void (*)(IOService*, void*), void*)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::causeInterrupt(int)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::messageClients(unsigned int, void*, unsigned long)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::tellChangeDown(unsigned long)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::compareProperty(OSDictionary*, OSString const*)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::compareProperty(OSDictionary*, char const*)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::configureReport(IOReportChannelList*, unsigned int, void*, void*)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::enableInterrupt(int)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::errnoFromReturn(int)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::getDeviceMemory()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::nextIdleTimeout(unsigned long long, unsigned long long, unsigned int)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::powerChangeDone(unsigned long)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::registerService(unsigned int)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::setDeviceMemory(OSArray*)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::terminateClient(IOService*, unsigned int)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::allowPowerChange(unsigned long)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::applyToProviders(void (*)(IOService*, void*), void*)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::disableInterrupt(int)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::getInterruptType(int, int*)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::registerInterest(OSSymbol const*, int (*)(void*, void*, unsigned int, IOService*, void*, unsigned long), void*, void*)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::removePowerChild(IOPowerConnection*)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::requestTerminate(IOService*, unsigned int)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::stringFromReturn(int)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::tellNoChangeDown(unsigned long)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::addNeededResource(char const*)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::applyToInterested(OSSymbol const*, void (*)(OSObject*, void*), void*)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::cancelPowerChange(unsigned long)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::compareProperties(OSDictionary*, OSCollection*)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::getAggressiveness(unsigned long, unsigned long*)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::registerInterrupt(int, OSObject*, void (*)(OSObject*, void*, IOService*, int), void*)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::setAggressiveness(unsigned long, unsigned long)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::lockForArbitration(bool)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::matchPropertyTable(OSDictionary*)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::matchPropertyTable(OSDictionary*, int*)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::setIdleTimerPeriod(unsigned long)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::systemWillShutdown(unsigned int)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::_RESERVEDIOService2()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::_RESERVEDIOService3()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::_RESERVEDIOService4()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::_RESERVEDIOService5()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::_RESERVEDIOService6()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::_RESERVEDIOService7()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::_RESERVEDIOService8()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::_RESERVEDIOService9()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::registerPowerDriver(IOService*, IOPMPowerState*, unsigned long)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::unregisterInterrupt(int)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::_RESERVEDIOService10()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::_RESERVEDIOService11()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::_RESERVEDIOService12()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::_RESERVEDIOService13()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::_RESERVEDIOService14()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::_RESERVEDIOService15()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::_RESERVEDIOService16()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::_RESERVEDIOService17()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::_RESERVEDIOService18()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::_RESERVEDIOService19()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::_RESERVEDIOService20()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::_RESERVEDIOService21()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::_RESERVEDIOService22()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::_RESERVEDIOService23()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::_RESERVEDIOService24()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::_RESERVEDIOService25()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::_RESERVEDIOService26()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::_RESERVEDIOService27()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::_RESERVEDIOService28()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::_RESERVEDIOService29()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::_RESERVEDIOService30()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::_RESERVEDIOService31()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::_RESERVEDIOService32()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::_RESERVEDIOService33()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::_RESERVEDIOService34()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::_RESERVEDIOService35()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::_RESERVEDIOService36()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::_RESERVEDIOService37()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::_RESERVEDIOService38()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::_RESERVEDIOService39()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::_RESERVEDIOService40()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::_RESERVEDIOService41()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::_RESERVEDIOService42()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::_RESERVEDIOService43()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::_RESERVEDIOService44()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::_RESERVEDIOService45()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::_RESERVEDIOService46()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::_RESERVEDIOService47()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::callPlatformFunction(OSSymbol const*, bool, void*, void*, void*, void*)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::callPlatformFunction(char const*, bool, void*, void*, void*, void*)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::getDeviceMemoryCount()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::unlockForArbitration()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::powerStateDidChangeTo(unsigned long, unsigned long, IOService*)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::copyClientWithCategory(OSSymbol const*)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::powerStateWillChangeTo(unsigned long, unsigned long, IOService*)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::acknowledgeNotification(void*, unsigned int)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::requestPowerDomainState(unsigned long, IOPowerConnection*, unsigned long)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::getDeviceMemoryWithIndex(unsigned int)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::mapDeviceMemoryWithIndex(unsigned int, unsigned int)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::powerStateForDomainState(unsigned long)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::maxCapabilityForDomainState(unsigned long)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::initialPowerStateForDomainState(unsigned long)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::free()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::init(OSDictionary*)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::init(IORegistryEntry*, IORegistryPlane const*)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::open(IOService*, unsigned int, void*)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::close(IOService*, unsigned int)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::probe(IOService*, int*)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::PMinit()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::PMstop()", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::attach(IOService*)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::detach(IOService*)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::message(unsigned int, IOService*, void*)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::Dispatch(IORPC)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::finalize(unsigned int)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::terminate(unsigned int)", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::IOService(OSMetaClass const*)", referenced from:
+      AMDProbe::AMDProbe(OSMetaClass const*) in AMDProbe.o
+      AMDProbe::AMDProbe(OSMetaClass const*) in AMDProbe.o
+      AMDProbe::MetaClass::alloc() const in AMDProbe.o
+      AMDProbe::AMDProbe() in AMDProbe.o
+      AMDProbe::AMDProbe() in AMDProbe.o
+  "IOService::~IOService()", referenced from:
+      AMDProbe::~AMDProbe() in AMDProbe.o
+      AMDProbe::~AMDProbe() in AMDProbe.o
+      AMDProbe::~AMDProbe() in AMDProbe.o
+  "OSMetaClass::getClassName() const", referenced from:
+      AMDProbe::start(IOService*) in AMDProbe.o
+  "OSMetaClass::getMetaClass() const", referenced from:
+      vtable for AMDProbe::MetaClass in AMDProbe.o
+  "OSMetaClass::taggedRetain(void const*) const", referenced from:
+      vtable for AMDProbe::MetaClass in AMDProbe.o
+  "OSMetaClass::taggedRelease(void const*) const", referenced from:
+      vtable for AMDProbe::MetaClass in AMDProbe.o
+  "OSMetaClass::taggedRelease(void const*, int) const", referenced from:
+      vtable for AMDProbe::MetaClass in AMDProbe.o
+  "OSMetaClass::getRetainCount() const", referenced from:
+      vtable for AMDProbe::MetaClass in AMDProbe.o
+  "OSMetaClass::instanceConstructed() const", referenced from:
+      AMDProbe::MetaClass::alloc() const in AMDProbe.o
+      AMDProbe::AMDProbe() in AMDProbe.o
+      AMDProbe::AMDProbe() in AMDProbe.o
+  "OSMetaClass::retain() const", referenced from:
+      vtable for AMDProbe::MetaClass in AMDProbe.o
+  "OSMetaClass::release(int) const", referenced from:
+      vtable for AMDProbe::MetaClass in AMDProbe.o
+  "OSMetaClass::release() const", referenced from:
+      vtable for AMDProbe::MetaClass in AMDProbe.o
+  "OSMetaClass::serialize(OSSerialize*) const", referenced from:
+      vtable for AMDProbe::MetaClass in AMDProbe.o
+  "IORegistryEntry::compareName(OSString*, OSString**) const", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IORegistryEntry::getLocation(IORegistryPlane const*) const", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IORegistryEntry::getProperty(OSString const*) const", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IORegistryEntry::getProperty(OSString const*, IORegistryPlane const*, unsigned int) const", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IORegistryEntry::getProperty(OSSymbol const*) const", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IORegistryEntry::getProperty(OSSymbol const*, IORegistryPlane const*, unsigned int) const", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IORegistryEntry::getProperty(char const*) const", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IORegistryEntry::getProperty(char const*, IORegistryPlane const*, unsigned int) const", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IORegistryEntry::compareNames(OSObject*, OSString**) const", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IORegistryEntry::copyLocation(IORegistryPlane const*) const", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IORegistryEntry::copyProperty(OSString const*) const", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IORegistryEntry::copyProperty(OSString const*, IORegistryPlane const*, unsigned int) const", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IORegistryEntry::copyProperty(OSSymbol const*) const", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IORegistryEntry::copyProperty(OSSymbol const*, IORegistryPlane const*, unsigned int) const", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IORegistryEntry::copyProperty(char const*) const", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IORegistryEntry::copyProperty(char const*, IORegistryPlane const*, unsigned int) const", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IORegistryEntry::getChildEntry(IORegistryPlane const*) const", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IORegistryEntry::applyToParents(void (*)(IORegistryEntry*, void*), void*, IORegistryPlane const*) const", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IORegistryEntry::copyChildEntry(IORegistryPlane const*) const", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IORegistryEntry::getParentEntry(IORegistryPlane const*) const", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IORegistryEntry::applyToChildren(void (*)(IORegistryEntry*, void*), void*, IORegistryPlane const*) const", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IORegistryEntry::copyParentEntry(IORegistryPlane const*) const", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IORegistryEntry::getChildIterator(IORegistryPlane const*) const", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IORegistryEntry::getPathComponent(char*, int*, IORegistryPlane const*) const", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IORegistryEntry::getParentIterator(IORegistryPlane const*) const", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IORegistryEntry::dictionaryWithProperties() const", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IORegistryEntry::getName(IORegistryPlane const*) const", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IORegistryEntry::getPath(char*, int*, IORegistryPlane const*) const", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IORegistryEntry::inPlane(IORegistryPlane const*) const", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IORegistryEntry::isChild(IORegistryEntry*, IORegistryPlane const*, bool) const", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IORegistryEntry::copyName(IORegistryPlane const*) const", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IORegistryEntry::getDepth(IORegistryPlane const*) const", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IORegistryEntry::isParent(IORegistryEntry*, IORegistryPlane const*, bool) const", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "OSMetaClassBase::isEqualTo(OSMetaClassBase const*) const", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+      vtable for AMDProbe::MetaClass in AMDProbe.o
+  "OSObject::taggedRetain(void const*) const", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "OSObject::taggedRelease(void const*) const", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "OSObject::taggedRelease(void const*, int) const", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "OSObject::getRetainCount() const", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "OSObject::retain() const", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "OSObject::release(int) const", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "OSObject::release() const", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "OSObject::serialize(OSSerialize*) const", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::getProvider() const", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::getWorkLoop() const", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::handleIsOpen(IOService const*) const", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::getClientIterator() const", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::getProviderIterator() const", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::serializeProperties(OSSerialize*) const", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::getOpenClientIterator() const", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::getOpenProviderIterator() const", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::isOpen(IOService const*) const", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::getState() const", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "IOService::getClient() const", referenced from:
+      vtable for AMDProbe in AMDProbe.o
+  "vtable for IOService", referenced from:
+      AMDProbe::start(IOService*) in AMDProbe.o
+      AMDProbe::stop(IOService*) in AMDProbe.o
+   NOTE: a missing vtable usually means the first non-inline virtual member function has no definition.
+ld: symbol(s) not found for architecture x86_64
+clang: error: linker command failed with exit code 1 (use -v to see invocation)
+  -> LINK FAILED (rc=1)
