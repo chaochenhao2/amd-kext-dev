@@ -1,0 +1,110 @@
+name: Link Strategy Probe
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/probe.yml'
+
+jobs: 
+  probe:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Compile object
+        run: |
+          set -euxo pipefail
+          SDK=$(xcrun --show-sdk-path)
+          K=AMDProbe
+          mkdir -p build
+          clang++ \
+            -arch x86_64 -std=c++17 -mkernel -fapple-kext \
+            -fno-rtti -fno-exceptions -fno-builtin -fno-common -nostdinc++ \
+            -D__KERNEL__ -DKERNEL -DKERNEL_PRIVATE -DDRIVER_PRIVATE -DAPPLE -DNeXT \
+            -I"$SDK/System/Library/Frameworks/Kernel.framework/Headers" \
+            -isystem "$SDK/usr/include" \
+            -O2 -c "kext/$K/$K.cpp" -o "build/$K.o"
+          file "build/$K.o"
+
+      - name: Try link variants
+        run: |
+          set +e
+          K=AMDProbe
+          OBJ="build/$K.o"
+          report="link-report.txt"
+          : > "$report"
+
+          ft() {
+            # read Mach-O filetype at offset 12 (little endian uint32)
+            xxd -s 12 -l 4 -e "$1" 2>/dev/null | awk '{printf "%d", strtonum("0x"$2)}'
+          }
+          name() {
+            case "$1" in
+              1) echo "MH_OBJECT(不可加载)";;
+              2) echo "MH_EXECUTE";;
+              6) echo "MH_DYLIB";;
+              8) echo "MH_BUNDLE ✅";;
+              11) echo "MH_KEXT_BUNDLE ✅";;
+              *) echo "unknown";;
+            esac
+          }
+
+          run_variant() {
+            local label="$1"; shift
+            local out="build/v_${label}"
+            echo "==================================================" >> "$report"
+            echo "[$label] clang++ $*" >> "$report"
+            clang++ "$@" "$OBJ" -o "$out" >> "$report" 2>&1
+            local rc=$?
+            if [ $rc -ne 0 ]; then
+              echo "  -> LINK FAILED (rc=$rc)" >> "$report"
+              return
+            fi
+            local t=$(ft "$out")
+            echo "  -> filetype=$t $(name $t)" >> "$report"
+            file "$out" >> "$report"
+          }
+
+          # 变体 A: 纯 -kext，不加 -r
+          run_variant A -arch x86_64 -mkernel -nostdlib -Wl,-kext
+
+          # 变体 B: -bundle + dynamic_lookup
+          run_variant B -arch x86_64 -mkernel -bundle -undefined dynamic_lookup
+
+          # 变体 C: -bundle + dynamic_lookup + -kext
+          run_variant C -arch x86_64 -mkernel -bundle -undefined dynamic_lookup -Wl,-kext
+
+          # 变体 D: -Wl,-kext + dynamic_lookup
+          run_variant D -arch x86_64 -mkernel -nostdlib -Wl,-kext -Wl,-undefined,dynamic_lookup
+
+          # 变体 E: 老式 -r（已知产出 OBJECT，作对照）
+          run_variant E -arch x86_64 -mkernel -nostdlib -Wl,-kext -Wl,-r
+
+          # 变体 F: -dylib
+          run_variant F -arch x86_64 -mkernel -nostdlib -Wl,-kext -Wl,-dylib
+
+          cat "$report"
+
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: link-report
+          path: link-report.txt
+          if-no-files-found: warn
+
+      - name: Push report to branch
+        if: always()
+        run: |
+          set +e
+          mkdir -p /tmp/rep
+          cp link-report.txt /tmp/rep/ 2>/dev/null
+          cd /tmp/rep
+          git init -b probe-report
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "link probe report"
+          git remote add origin "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git"
+          git push -f origin probe-report
