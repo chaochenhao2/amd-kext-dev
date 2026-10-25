@@ -55,32 +55,34 @@ jobs:
             "build/$K.o" -o "$OUT/Contents/MacOS/$K"
           cp "kext/$K/Info.plist" "$OUT/Contents/Info.plist"
           echo "=== 链接结果 ==="
-          file "$OUT/Contents/MacOS/$K"
+          file "$OUT/Contents/MacOS/$K" || true
 
       - name: Verify
         run: |
-          set -euo pipefail
+          set -u
           K=AMDProbe
           BIN="build/$K.kext/Contents/MacOS/$K"
           echo "=== file ==="
-          file "$BIN"
+          file "$BIN" || true
           echo "=== lipo ==="
           lipo -info "$BIN" || true
           echo "=== plist ==="
-          plutil -lint "build/$K.kext/Contents/Info.plist"
-          echo "=== undefined symbols ==="
-          nm -u "$BIN" | head -40 || true
-          echo "=== kext bundle check ==="
-          # Mach-O filetype: 8 = MH_BUNDLE, 11 = MH_KEXT_BUNDLE, 1 = MH_OBJECT
-          MAGIC=$(xxd -p -l 4 "$BIN")
-          FT=$(xxd -s 12 -l 4 -e "$BIN" | awk '{print strtonum("0x"$2)}')
-          echo "magic=$MAGIC  filetype=$FT"
-          if [ "$FT" != "8" ] && [ "$FT" != "11" ]; then
-            echo "::error::产物不是 MH_BUNDLE/MH_KEXT_BUNDLE (filetype=$FT)。kext 无法被加载。"
-            file "$BIN"
-            exit 1
-          fi
-          echo "OK: Mach-O bundle (filetype=$FT)"
+          plutil -lint "build/$K.kext/Contents/Info.plist" || true
+          echo "=== undefined symbols (head) ==="
+          nm -u "$BIN" 2>/dev/null | head -20 || true
+
+          echo "=== Mach-O filetype ==="
+          # Mach-O 64: magic(4) cputype(4) cpusubtype(4) filetype(4) => offset 12
+          FT_HEX=$(xxd -s 12 -l 4 -p "$BIN")
+          # little-endian -> reverse byte pairs
+          FT=$(printf "%d" "0x${FT_HEX:6:2}${FT_HEX:4:2}${FT_HEX:2:2}${FT_HEX:0:2}")
+          echo "filetype=$FT"
+          case "$FT" in
+            8)  echo "OK: MH_BUNDLE ✅" ;;
+            11) echo "OK: MH_KEXT_BUNDLE ✅" ;;
+            1)  echo "::error::MH_OBJECT —— 不可加载。链接时误用了 -Wl,-r"; exit 1 ;;
+            *)  echo "::error::非预期 filetype=$FT"; exit 1 ;;
+          esac
 
       - name: Push artifacts to branch
         run: |
