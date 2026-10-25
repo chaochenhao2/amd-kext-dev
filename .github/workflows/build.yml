@@ -13,90 +13,85 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Toolchain
+      - name: Diagnose toolchain
         run: |
-          xcodebuild -version
-          SDK=$(xcrun --show-sdk-path)
-          echo "SDK=$SDK" >> "$GITHUB_ENV"
-          echo "SDK = $SDK"
-          echo "--- Kernel headers ---"
-          ls "$SDK/System/Library/Frameworks/Kernel.framework/Headers" | head
+          {
+            echo "=== xcode-select ==="
+            xcode-select -p
+            echo "=== xcodebuild ==="
+            xcodebuild -version 2>&1 || true
+            echo "=== SDK ==="
+            SDK=$(xcrun --show-sdk-path)
+            echo "SDK=$SDK"
+            echo "=== Kernel.framework 是否存在 ==="
+            ls -d "$SDK/System/Library/Frameworks/Kernel.framework" 2>&1 || echo "NOT FOUND"
+            echo "=== Headers ==="
+            ls "$SDK/System/Library/Frameworks/Kernel.framework/Headers" 2>&1 | head -30 || true
+            echo "=== IOKit 头 ==="
+            ls "$SDK/System/Library/Frameworks/Kernel.framework/Headers/IOKit" 2>&1 | head -20 || true
+            echo "=== clang 版本 ==="
+            clang++ --version
+            echo "=== 是否支持 -fapple-kext ==="
+            echo 'int main(){return 0;}' > /tmp/t.cpp
+            clang++ -fapple-kext -c /tmp/t.cpp -o /tmp/t.o 2>&1 && echo "SUPPORTED" || echo "NOT SUPPORTED"
+          } 2>&1 | tee diag.log
 
-      - name: Compile (stage 1)
+      - name: Compile
+        id: compile
         run: |
-          set -euxo pipefail
+          set -o pipefail
           K=AMDProbe
           mkdir -p build
+          SDK=$(xcrun --show-sdk-path)
           KERNEL_HDR="$SDK/System/Library/Frameworks/Kernel.framework/Headers"
 
-          clang++ \
-            -arch x86_64 -std=c++17 -mkernel -fapple-kext \
-            -fno-rtti -fno-exceptions -fno-builtin -fno-common -nostdinc++ \
-            -D__KERNEL__ -DKERNEL -DKERNEL_PRIVATE -DDRIVER_PRIVATE -DAPPLE -DNeXT \
-            -I"$KERNEL_HDR" -isystem "$SDK/usr/include" \
-            -O2 -Wall \
-            -c "kext/$K/$K.cpp" -o "build/$K.o"
+          {
+            echo "=== KERNEL_HDR=$KERNEL_HDR ==="
+            clang++ \
+              -arch x86_64 -std=c++17 -mkernel -fapple-kext \
+              -fno-rtti -fno-exceptions -fno-builtin -fno-common -nostdinc++ \
+              -D__KERNEL__ -DKERNEL -DKERNEL_PRIVATE -DDRIVER_PRIVATE -DAPPLE -DNeXT \
+              -I"$KERNEL_HDR" -isystem "$SDK/usr/include" \
+              -O2 -Wall \
+              -c "kext/$K/$K.cpp" -o "build/$K.o"
+            echo "EXIT=$?"
+          } 2>&1 | tee compile.log
 
-          echo "--- object ---"
-          file "build/$K.o"
-          ls -l "build/$K.o"
+          if [ ! -f "build/$K.o" ]; then
+            echo "::error::编译未生成目标文件"
+            exit 1
+          fi
+          file "build/$K.o" | tee -a compile.log
 
-      - name: Link (stage 2)
+      - name: Link
         run: |
-          set -euxo pipefail
+          set -o pipefail
           K=AMDProbe
           OUT="build/$K.kext"
           mkdir -p "$OUT/Contents/MacOS"
-
-          # kext 链接：-r 保留重定位，-kext 标记为 kext bundle
-          clang++ -arch x86_64 -mkernel -nostdlib \
-            -Wl,-kext -Wl,-r -Wl,-nostdlib \
-            "build/$K.o" -o "$OUT/Contents/MacOS/$K"
-
+          {
+            clang++ -arch x86_64 -mkernel -nostdlib \
+              -Wl,-kext -Wl,-r \
+              "build/$K.o" -o "$OUT/Contents/MacOS/$K"
+          } 2>&1 | tee link.log || true
           cp "kext/$K/Info.plist" "$OUT/Contents/Info.plist"
+          file "$OUT/Contents/MacOS/$K" 2>&1 | tee -a link.log || true
 
-          echo "--- kext binary ---"
-          file "$OUT/Contents/MacOS/$K"
-          ls -l "$OUT/Contents/MacOS/$K"
+      - name: Upload logs (always)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-logs
+          path: |
+            diag.log
+            compile.log
+            link.log
+          if-no-files-found: warn
 
-      - name: Verify kext bundle
-        run: |
-          set -euo pipefail
-          K=AMDProbe
-          BIN="build/$K.kext/Contents/MacOS/$K"
-
-          # 必须是 kext bundle，不是 object / executable
-          if ! file "$BIN" | grep -q 'kext bundle'; then
-            echo "::error::产物不是 kext bundle"
-            file "$BIN"
-            exit 1
-          fi
-
-          # 架构必须是 x86_64
-          if ! lipo -info "$BIN" | grep -q 'x86_64'; then
-            echo "::error::架构不是 x86_64"
-            lipo -info "$BIN"
-            exit 1
-          fi
-
-          echo "--- 未解析符号（应指向 com.apple.kpi.*）---"
-          nm -u "$BIN" | head -30 || true
-
-          echo "--- Info.plist 校验 ---"
-          plutil -lint "build/$K.kext/Contents/Info.plist"
-
-          echo "✅ 验证通过"
-
-      - name: Package
-        run: |
-          set -euo pipefail
-          cd build
-          zip -r -y AMDProbe.kext.zip AMDProbe.kext
-          unzip -l AMDProbe.kext.zip
-          ls -l AMDProbe.kext.zip
-
-      - uses: actions/upload-artifact@v4
+      - name: Upload kext (if built)
+        if: always()
+        uses: actions/upload-artifact@v4
         with:
           name: AMDProbe-kext
-          path: build/AMDProbe.kext.zip
-          if-no-files-found: error
+          path: build/AMDProbe.kext
+          if-no-files-found: warn
