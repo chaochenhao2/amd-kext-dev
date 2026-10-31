@@ -80,7 +80,12 @@ public:
     virtual void stop(IOService *provider) APPLE_KEXT_OVERRIDE;
 
 private:
-    IOPCIDevice       *fPCIDevice = nullptr;
+// Use the plain IOService interface only. IOPCIDevice lives in
+// com.apple.iokit.IOPCIFamily, and several of its members (metaClass,
+// extendedConfigRead*) are not exported, which makes the whole kext fail
+// injection with "RIP-relative overflow". Everything we need for a read-only
+// probe is reachable through IOService + IORegistryEntry (both KPI).
+    IOService          *fPCIDevice = nullptr;
     IOMemoryMap       *fBAR0Map   = nullptr;
     volatile uint32_t *fBAR0      = nullptr;
 };
@@ -96,20 +101,35 @@ bool RDNA3Probe::start(IOService *provider)
     // 第一行标记：立刻可见
     PLOG("###################### KEXT LOADED ######################");
 
-    fPCIDevice = OSDynamicCast(IOPCIDevice, provider);
+    // NOTE: deliberately avoid OSDynamicCast(IOPCIDevice, ...) and the
+    // extendedConfig* family. Those pull in IOPCIDevice::metaClass and
+    // IOPCIDevice::extendedConfigRead*, which are NOT exported by
+    // IOPCIFamily; OpenCore logs "Symbol ... has 0 value" and then fails
+    // the whole kext with "RIP-relative overflow".
+    //
+    // Instead we use only symbols that resolve through the KPI:
+    //   - IOProviderClass already guarantees an IOPCIDevice match
+    //   - IORegistryEntry::getProperty for the registry facts
+    //   - IOService::getDeviceMemoryWithIndex / mapDeviceMemoryWithIndex
+    fPCIDevice = provider;      // typed as IOService; no metaClass reference
     if (!fPCIDevice) {
-        PLOG("provider is not IOPCIDevice");
+        PLOG("provider is null");
         return false;
     }
 
-    fPCIDevice->setMemoryEnable(true);
-    fPCIDevice->setBusMasterEnable(true);
-
-    UInt16 vendor = fPCIDevice->configRead16(kIOPCIConfigVendorID);
-    UInt16 device = fPCIDevice->configRead16(kIOPCIConfigDeviceID);
-    UInt8  rev    = fPCIDevice->configRead8(kIOPCIConfigRevisionID);
-
-    PLOG("PCI: vendor=0x%04X device=0x%04X rev=0x%02X", vendor, device, rev);
+    // Read identity straight from the registry instead of config space.
+    OSString *cls = OSDynamicCast(OSString, provider->getProperty("class"));
+    if (cls) {
+        PLOG("provider class = %s", cls->getCStringNoCopy());
+    }
+    OSData *devid = OSDynamicCast(OSData, provider->getProperty("device-id"));
+    OSData *venid = OSDynamicCast(OSData, provider->getProperty("vendor-id"));
+    if (devid && devid->getLength() >= 4 && venid && venid->getLength() >= 4) {
+        const UInt8 *d = (const UInt8 *)devid->getBytesNoCopy();
+        const UInt8 *v = (const UInt8 *)venid->getBytesNoCopy();
+        PLOG("vendor=%02X%02X device=%02X%02X",
+             v[1], v[0], d[1], d[0]);
+    }
 
     UInt64 bar0phys = 0;
     UInt64 bar0size = 0;
@@ -142,8 +162,7 @@ bool RDNA3Probe::start(IOService *provider)
 
     PLOG("=== ABOUT TO PANIC FOR DIAGNOSTICS ===");
 
-    panic("RDNA3Probe: LOADED vendor=0x%04X dev=0x%04X rev=0x%02X BAR0phys=0x%llX BAR0size=0x%llX PSP35=0x%08X PSP81=0x%08X",
-          vendor, device, rev,
+    panic("RDNA3Probe LOADED BAR0phys=0x%llX BAR0size=0x%llX PSP35=0x%08X PSP81=0x%08X",
           (unsigned long long)bar0phys,
           (unsigned long long)bar0size,
           r35, r81);
