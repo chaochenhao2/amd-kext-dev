@@ -43,10 +43,15 @@ struct KmodInfo64V1 {
 
 extern "C" {
 
-// Placed in __DATA/__data so it is a real, in-range address (N_SECT|N_EXT),
-// exactly like Lilu's symbol.
+// IMPORTANT: name the variable `kmod_info` (NO leading underscore) so the
+// emitted C symbol is exactly `_kmod_info`. OpenCore compares that literal
+// string with AsciiStrCmp; declaring `_kmod_info` in C produces the double
+// underscore symbol `__kmod_info`, which never matches and yields
+// "Prelinked Injection ... - Invalid Parameter".
+// Placed in __DATA/__data so the value is a real in-range address
+// (N_SECT|N_EXT), exactly like Lilu's symbol.
 __attribute__((used, visibility("default"), section("__DATA,__data")))
-KmodInfo64V1 _kmod_info = {
+KmodInfo64V1 kmod_info = {
     /* NextAddr          */ 0,
     /* InfoVersion       */ 1,
     /* Id                */ 0,
