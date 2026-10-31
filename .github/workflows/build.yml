@@ -51,8 +51,10 @@ jobs:
 
             OUT="out/$K.kext"
             mkdir -p "$OUT/Contents/MacOS"
-            if ! clang++ -arch x86_64 -mkernel -nostdlib \
-              -Wl,-kext \
+            # -fapple-kext is REQUIRED: it emits _kmod_info, without which
+            # the kernel refuses the kext ("Invalid Parameter" from OpenCore).
+            if ! clang++ -arch x86_64 -mkernel -fapple-kext -nostdlib \
+              -Wl,-kext -Wl,-no_deduplicate \
               "build/$K.o" -o "$OUT/Contents/MacOS/$K"; then
               echo "::error::$K LINK FAILED"
               FAILED=1
@@ -63,6 +65,14 @@ jobs:
 
             echo "--- $K verification ---"
             file "$OUT/Contents/MacOS/$K"
+
+            # Hard requirement: _kmod_info must exist or macOS cannot load it.
+            if ! nm "$OUT/Contents/MacOS/$K" 2>/dev/null | grep -q "_kmod_info"; then
+              echo "::error::$K missing _kmod_info symbol"
+              FAILED=1
+              continue
+            fi
+            echo "OK: _kmod_info present"
             FT_HEX=$(xxd -s 12 -l 4 -p "$OUT/Contents/MacOS/$K")
             FT=$(printf "%d" "0x${FT_HEX:6:2}${FT_HEX:4:2}${FT_HEX:2:2}${FT_HEX:0:2}")
             echo "filetype=$FT"
