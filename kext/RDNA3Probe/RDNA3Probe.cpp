@@ -13,6 +13,56 @@
 #include <IOKit/IODeviceMemory.h>
 #include <IOKit/IOLib.h>
 
+// ---------------------------------------------------------------------------
+// KMOD_INFO_64_V1
+//
+// The kernel identifies a kext solely by the exported "_kmod_info" symbol.
+// clang -mkernel does NOT synthesize it, so every hand-built kext must
+// define it. Layout below is copied verbatim from XNU osfmk/mach/kmod.h
+// (see OpenCorePkg Include/Apple/IndustryStandard/AppleKmodInfo.h) and is
+// #pragma pack(4) — note ReferenceListAddr starts at offset 148, not 152.
+// ---------------------------------------------------------------------------
+#define KMOD_MAX_NAME 64
+
+#pragma pack(4)
+struct KmodInfo64V1 {
+    uint64_t NextAddr;
+    int32_t  InfoVersion;
+    uint32_t Id;
+    uint8_t  Name[KMOD_MAX_NAME];
+    uint8_t  Version[KMOD_MAX_NAME];
+    int32_t  ReferenceCount;
+    uint64_t ReferenceListAddr;
+    uint64_t Address;
+    uint64_t Size;
+    uint64_t HdrSize;
+    uint64_t StartAddr;
+    uint64_t StopAddr;
+};
+#pragma pack()
+
+extern "C" {
+
+// Placed in __DATA/__data so it is a real, in-range address (N_SECT|N_EXT),
+// exactly like Lilu's symbol.
+__attribute__((used, visibility("default"), section("__DATA,__data")))
+KmodInfo64V1 _kmod_info = {
+    /* NextAddr          */ 0,
+    /* InfoVersion       */ 1,
+    /* Id                */ 0,
+    /* Name              */ "com.local.RDNA3Probe",
+    /* Version           */ "0.2.0",
+    /* ReferenceCount    */ 0,
+    /* ReferenceListAddr */ 0,
+    /* Address           */ 0,
+    /* Size              */ 0,
+    /* HdrSize           */ 0,
+    /* StartAddr         */ 0,
+    /* StopAddr          */ 0,
+};
+
+}
+
 #define PROBE_TAG "RDNA3Probe"
 #define PLOG(fmt, ...) IOLog(PROBE_TAG ": " fmt "\n", ##__VA_ARGS__)
 
