@@ -38,6 +38,7 @@ jobs:
             echo "=================================================="
 
             if ! clang++ \
+              -target x86_64-apple-macos12.0 \
               -arch x86_64 -std=c++17 -mkernel -fapple-kext \
               -fno-rtti -fno-exceptions -fno-builtin -fno-common -nostdinc++ \
               -D__KERNEL__ -DKERNEL -DKERNEL_PRIVATE -DDRIVER_PRIVATE -DAPPLE -DNeXT \
@@ -51,9 +52,11 @@ jobs:
 
             OUT="out/$K.kext"
             mkdir -p "$OUT/Contents/MacOS"
-            # -fapple-kext is REQUIRED: it emits _kmod_info, without which
-            # the kernel refuses the kext ("Invalid Parameter" from OpenCore).
-            if ! clang++ -arch x86_64 -mkernel -fapple-kext -nostdlib \
+            # -target is REQUIRED so the linker emits LC_BUILD_VERSION with
+            # platform=macOS(1). Without it platform=0 and the kernel rejects.
+            if ! clang++ \
+              -target x86_64-apple-macos12.0 \
+              -arch x86_64 -mkernel -fapple-kext -nostdlib \
               -Wl,-kext -Wl,-no_deduplicate \
               "build/$K.o" -o "$OUT/Contents/MacOS/$K"; then
               echo "::error::$K LINK FAILED"
@@ -66,7 +69,7 @@ jobs:
             echo "--- $K verification ---"
             file "$OUT/Contents/MacOS/$K"
 
-            # Hard requirement: _kmod_info must exist or macOS cannot load it.
+            # Hard requirement: _kmod_info or the kernel cannot identify the kext.
             if ! nm "$OUT/Contents/MacOS/$K" 2>/dev/null | grep -q "_kmod_info"; then
               echo "::error::$K missing _kmod_info symbol"
               FAILED=1
