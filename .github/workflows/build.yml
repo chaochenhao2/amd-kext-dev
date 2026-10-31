@@ -21,94 +21,104 @@ jobs:
           SDK=$(xcrun --show-sdk-path)
           echo "SDK=$SDK" >> "$GITHUB_ENV"
           xcodebuild -version
+          echo "SDK = $SDK"
 
-      - name: Compile
+      - name: Build all kexts
         run: |
-          set -euo pipefail
-          K=AMDProbe
-          mkdir -p build
+          set -uo pipefail
+          mkdir -p build out
           KERNEL_HDR="$SDK/System/Library/Frameworks/Kernel.framework/Headers"
-          clang++ \
-            -arch x86_64 -std=c++17 -mkernel -fapple-kext \
-            -fno-rtti -fno-exceptions -fno-builtin -fno-common -nostdinc++ \
-            -D__KERNEL__ -DKERNEL -DKERNEL_PRIVATE -DDRIVER_PRIVATE -DAPPLE -DNeXT \
-            -I"$KERNEL_HDR" -isystem "$SDK/usr/include" \
-            -O2 -Wall \
-            -c "kext/$K/$K.cpp" -o "build/$K.o"
-          file "build/$K.o"
+          FAILED=0
 
-      - name: Link
+          for SRC_DIR in kext/*/; do
+            K=$(basename "$SRC_DIR")
+            [ -f "kext/$K/$K.cpp" ] || continue
+            echo "=================================================="
+            echo ">>> Building $K"
+            echo "=================================================="
+
+            if ! clang++ \
+              -arch x86_64 -std=c++17 -mkernel -fapple-kext \
+              -fno-rtti -fno-exceptions -fno-builtin -fno-common -nostdinc++ \
+              -D__KERNEL__ -DKERNEL -DKERNEL_PRIVATE -DDRIVER_PRIVATE -DAPPLE -DNeXT \
+              -I"$KERNEL_HDR" -isystem "$SDK/usr/include" \
+              -O2 -Wall \
+              -c "kext/$K/$K.cpp" -o "build/$K.o"; then
+              echo "::error::$K COMPILE FAILED"
+              FAILED=1
+              continue
+            fi
+
+            OUT="out/$K.kext"
+            mkdir -p "$OUT/Contents/MacOS"
+            if ! clang++ -arch x86_64 -mkernel -nostdlib \
+              -Wl,-kext \
+              "build/$K.o" -o "$OUT/Contents/MacOS/$K"; then
+              echo "::error::$K LINK FAILED"
+              FAILED=1
+              continue
+            fi
+
+            cp "kext/$K/Info.plist" "$OUT/Contents/Info.plist"
+
+            echo "--- $K verification ---"
+            file "$OUT/Contents/MacOS/$K"
+            FT_HEX=$(xxd -s 12 -l 4 -p "$OUT/Contents/MacOS/$K")
+            FT=$(printf "%d" "0x${FT_HEX:6:2}${FT_HEX:4:2}${FT_HEX:2:2}${FT_HEX:0:2}")
+            echo "filetype=$FT"
+            case "$FT" in
+              8|11) echo "OK: Mach-O bundle" ;;
+              *) echo "::error::$K not a bundle (filetype=$FT)"; FAILED=1 ;;
+            esac
+            plutil -lint "$OUT/Contents/Info.plist" || FAILED=1
+          done
+
+          echo "=================================================="
+          echo "Build summary:"
+          ls -la out/ || true
+          echo "=================================================="
+
+          if [ $FAILED -ne 0 ]; then
+            echo "::error::One or more kexts failed"
+            exit 1
+          fi
+
+      - name: Collect artifacts
+        if: always()
         run: |
-          set -euo pipefail
-          K=AMDProbe
-          OUT="build/$K.kext"
-          mkdir -p "$OUT/Contents/MacOS"
-          # 实测结果（见 probe-report 分支）：
-          #   -Wl,-kext              -> "Mach-O 64-bit kext bundle"  ✅
-          #   -Wl,-kext -Wl,-r       -> "Mach-O 64-bit object"       ❌
-          #   -bundle -undefined dynamic_lookup -Wl,-kext -> 找不到 libc++ ❌
-          #   -Wl,-kext -Wl,-dylib   -> 大量未定义符号（内核才能提供）❌
-          # 结论：只用 -Wl,-kext，不加 -r，不链接任何系统库。
-          # IOService/OSMetaClass/IOLog 等符号保持未解析，由内核在加载时绑定。
-          clang++ -arch x86_64 -mkernel -nostdlib \
-            -Wl,-kext \
-            "build/$K.o" -o "$OUT/Contents/MacOS/$K"
-          cp "kext/$K/Info.plist" "$OUT/Contents/Info.plist"
-          echo "=== 链接结果 ==="
-          file "$OUT/Contents/MacOS/$K" || true
-
-      - name: Verify
-        run: |
-          set -u
-          K=AMDProbe
-          BIN="build/$K.kext/Contents/MacOS/$K"
-          echo "=== file ==="
-          file "$BIN" || true
-          echo "=== lipo ==="
-          lipo -info "$BIN" || true
-          echo "=== plist ==="
-          plutil -lint "build/$K.kext/Contents/Info.plist" || true
-          echo "=== undefined symbols (head) ==="
-          nm -u "$BIN" 2>/dev/null | head -20 || true
-
-          echo "=== Mach-O filetype ==="
-          # Mach-O 64: magic(4) cputype(4) cpusubtype(4) filetype(4) => offset 12
-          FT_HEX=$(xxd -s 12 -l 4 -p "$BIN")
-          # little-endian -> reverse byte pairs
-          FT=$(printf "%d" "0x${FT_HEX:6:2}${FT_HEX:4:2}${FT_HEX:2:2}${FT_HEX:0:2}")
-          echo "filetype=$FT"
-          case "$FT" in
-            8)  echo "OK: MH_BUNDLE ✅" ;;
-            11) echo "OK: MH_KEXT_BUNDLE ✅" ;;
-            1)  echo "::error::MH_OBJECT —— 不可加载。链接时误用了 -Wl,-r"; exit 1 ;;
-            *)  echo "::error::非预期 filetype=$FT"; exit 1 ;;
-          esac
+          set -uo pipefail
+          mkdir -p artifacts
+          for d in out/*.kext; do
+            [ -d "$d" ] || continue
+            K=$(basename "$d" .kext)
+            {
+              echo "name=$K"
+              echo "commit=$GITHUB_SHA"
+              date -u
+              file "$d/Contents/MacOS/$K" 2>&1 || true
+              lipo -info "$d/Contents/MacOS/$K" 2>&1 || true
+              nm -u "$d/Contents/MacOS/$K" 2>/dev/null | head -30 || true
+            } > "artifacts/$K-build-info.txt"
+            cp -R "$d" artifacts/
+          done
+          ls -laR artifacts/ || true
 
       - name: Push artifacts to branch
+        if: always()
         run: |
-          set -euo pipefail
-          K=AMDProbe
-          mkdir -p /tmp/out
-          cp -R "build/$K.kext" /tmp/out/
-          plutil -lint "/tmp/out/$K.kext/Contents/Info.plist" > /tmp/out/plist-lint.txt 2>&1 || true
-          file "/tmp/out/$K.kext/Contents/MacOS/$K" > /tmp/out/file-info.txt 2>&1 || true
-          lipo -info "/tmp/out/$K.kext/Contents/MacOS/$K" > /tmp/out/lipo-info.txt 2>&1 || true
-          nm -u "/tmp/out/$K.kext/Contents/MacOS/$K" > /tmp/out/undefined-symbols.txt 2>&1 || true
-          echo "commit=$GITHUB_SHA" > /tmp/out/build-info.txt
-          date -u >> /tmp/out/build-info.txt
-
-          cd /tmp/out
+          set -uo pipefail
+          cd artifacts
           git init -b artifacts
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add -A
-          git commit -m "build $GITHUB_SHA"
+          git commit -m "build $GITHUB_SHA" || echo "nothing to commit"
           git remote add origin "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git"
-          git push -f origin artifacts
+          git push -f origin artifacts || echo "push failed"
 
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: AMDProbe-kext
-          path: build/AMDProbe.kext
+          name: kexts
+          path: out/
           if-no-files-found: warn
