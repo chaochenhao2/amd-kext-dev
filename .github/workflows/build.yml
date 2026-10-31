@@ -52,17 +52,25 @@ jobs:
 
             OUT="out/$K.kext"
             mkdir -p "$OUT/Contents/MacOS"
-            # -target is REQUIRED so the linker emits LC_BUILD_VERSION with
-            # platform=macOS(1). Without it platform=0 and the kernel rejects.
+            # Strip LC_BUILD_VERSION after linking: -mkernel -nostdlib emits it
+            # with platform=0/minos=0/sdk=0 (invalid; macOS wants platform=1),
+            # and official kexts like Lilu carry no such command at all.
+            # Our post-link step removes it so the load-command set matches.
             if ! clang++ \
-              -target x86_64-apple-macos12.0 \
               -arch x86_64 -mkernel -fapple-kext -nostdlib \
               -Wl,-kext -Wl,-no_deduplicate \
-              "build/$K.o" -o "$OUT/Contents/MacOS/$K"; then
+              "build/$K.o" -o "build/$K.raw"; then
               echo "::error::$K LINK FAILED"
               FAILED=1
               continue
             fi
+
+            python3 .github/workflows/strip_build_version.py \
+              "build/$K.raw" "$OUT/Contents/MacOS/$K" || {
+              echo "::error::$K STRIP FAILED"
+              FAILED=1
+              continue
+            }
 
             cp "kext/$K/Info.plist" "$OUT/Contents/Info.plist"
 
