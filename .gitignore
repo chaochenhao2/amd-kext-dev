@@ -1,0 +1,5 @@
+# build artifacts
+*.kext/
+out/
+build/
+*-build-info.txt
